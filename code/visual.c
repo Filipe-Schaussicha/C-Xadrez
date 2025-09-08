@@ -28,4 +28,23 @@ void DesenharTabuleiro(){
             }
         }
     }
+
+    int fonte = tamanho_quadrado * 0.5;
+    char letras[] = "abcdefgh";
+    int letra_y = (SH + lado + tamanho_quadrado - fonte ) / 2;
+
+    for(int i = 0; i < 8; i++){
+
+        int letra_x = (SW - lado) / 2 + tamanho_quadrado * i + (tamanho_quadrado - MeasureText(TextFormat("%c", letras[i]), fonte)) / 2;
+
+        DrawText(TextFormat("%c", letras[i]), letra_x, letra_y ,fonte, BLACK);
+
+        /* TODO: possicionamento dos números
+
+        int numero_y = 
+
+        DrawText(TextFormat("%d", i + 1), letra_x, letra_y ,fonte, BLACK);
+
+        */
+    }
 }
