@@ -4,18 +4,20 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+const int lado_tabuleiro = SH * 0.8;
+const int lado_quadrado = lado_tabuleiro / 8;
+const int fonte = lado_quadrado * 0.5;
+
+const Vector2 inicio = {(SW - lado_tabuleiro) / 2, (SH - lado_tabuleiro) / 2};
+
 void DesenharTabuleiro(){
 
-    int lado = SH * 0.8;
-
-    int tamanho_quadrado = lado / 8;
-
-    Vector2 inicio = {(SW - lado) / 2, (SH - lado) / 2};
-
-    Color branco = RAYWHITE;
+    Color branco = WHITE;
     Color preto = PRETO;
 
     Vector2 mouse = GetMousePosition();
+
+    char letras[] = "abcdefgh";
 
     // desenha os quadrados do tabuleiro, alternando de cor
     for(int linha = 0; linha < 8; linha++){
@@ -23,30 +25,33 @@ void DesenharTabuleiro(){
 
             Color cor = ((linha + coluna) % 2 == 0) ? branco : preto;
 
-            Rectangle quadrado = (Rectangle){inicio.x + tamanho_quadrado * coluna, inicio.y + tamanho_quadrado * linha, tamanho_quadrado, tamanho_quadrado};
+            Rectangle quadrado = (Rectangle){inicio.x + lado_quadrado * coluna, inicio.y + lado_quadrado * linha, lado_quadrado, lado_quadrado};
 
             DrawRectangleRec(quadrado, cor);
 
             // desenha um destaque vermelhor em volta do quadrado sob o ponteiro do mouse
             if(CheckCollisionPointRec(mouse, quadrado)){
-                DrawRectangleLinesEx(quadrado, tamanho_quadrado * 0.025, RED);
+                DrawRectangleLinesEx(quadrado, lado_quadrado * 0.025, RED);
+
+                DrawText(TextFormat("%c%d", letras[coluna], 8 - linha ), 
+                (SW - MeasureText(TextFormat("%c%d", letras[coluna], 8 - linha), fonte)) / 2,
+                (SH - lado_tabuleiro) / 2 - (lado_quadrado + fonte) / 2,
+                fonte, BLACK);
             }
         }
     }
 
     // desenha as letras e números em volta do tabuleiro
-    int fonte = tamanho_quadrado * 0.5;
-    char letras[] = "abcdefgh";
-    int letra_y = (SH + lado + tamanho_quadrado - fonte ) / 2;
+    int letra_y = (SH + lado_tabuleiro + lado_quadrado - fonte ) / 2;
 
     for(int i = 0; i < 8; i++){
 
-        int letra_x = (SW - lado) / 2 + tamanho_quadrado * i + (tamanho_quadrado - MeasureText(TextFormat("%c", letras[i]), fonte)) / 2;
+        int letra_x = (SW - lado_tabuleiro) / 2 + lado_quadrado * i + (lado_quadrado - MeasureText(TextFormat("%c", letras[i]), fonte)) / 2;
 
         DrawText(TextFormat("%c", letras[i]), letra_x, letra_y ,fonte, BLACK);
 
-        int numero_y = (SH - lado) / 2 + lado - tamanho_quadrado * i - (tamanho_quadrado + fonte) / 2;
-        int numero_x = (SW - lado) / 2 - (tamanho_quadrado + MeasureText(TextFormat("%d", i + 1), fonte)) / 2;
+        int numero_y = (SH - lado_tabuleiro) / 2 + lado_tabuleiro - lado_quadrado * i - (lado_quadrado + fonte) / 2;
+        int numero_x = (SW - lado_tabuleiro) / 2 - (lado_quadrado + MeasureText(TextFormat("%d", i + 1), fonte)) / 2;
 
         DrawText(TextFormat("%d", i + 1), numero_x, numero_y ,fonte, BLACK);
 
@@ -55,10 +60,7 @@ void DesenharTabuleiro(){
 
 void DesenharPecas(Texture2D **imagens, Peca **tabuleiro){
 
-    int lado_tabuleiro = SH * 0.8;
-    int lado_quadrado = lado_tabuleiro / 8;
-
-    Vector2 inicio = {(SW - lado_tabuleiro) / 2, (SH - lado_tabuleiro) / 2};
+    Vector2 mouse = GetMousePosition();
 
     // desenha as peças do jogo
     for(int i = 0; i < 8; i++){
@@ -70,8 +72,6 @@ void DesenharPecas(Texture2D **imagens, Peca **tabuleiro){
             if(tipo != NULA){
 
                 Rectangle quadrado_atual = (Rectangle){inicio.x + lado_quadrado * j, inicio.y + lado_quadrado * i, lado_quadrado, lado_quadrado};
-
-                Vector2 mouse = GetMousePosition();
 
                 int cor = (compara_cores(tabuleiro[i][j].cor, PRETO)) ? 1 : 0;
 
@@ -90,4 +90,37 @@ void DesenharPecas(Texture2D **imagens, Peca **tabuleiro){
             }
         }
     }
+}
+
+Vector2 verifica_peca_selecionada(Peca **tabuleiro, Vector2 atual){
+
+    Vector2 mouse = GetMousePosition();
+
+    // Verifica se o botão esquerdo foi clicado
+    if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+
+        // Se sim, verifica qual casa foi clicada
+        for(int i = 0; i < 8; i++){
+            for(int j = 0; j < 8; j++){
+
+                Rectangle quadrado_atual = (Rectangle){inicio.x + lado_quadrado * j, inicio.y + lado_quadrado * i, lado_quadrado, lado_quadrado};
+
+                if(CheckCollisionPointRec(mouse, quadrado_atual) && tabuleiro[i][j].tipo != NULA){
+                    // Se um quadrado foi clicado e ele tem alguma peça, é retornada sua coordenada no tabuleiro
+                    return (Vector2){i,j};
+                }
+            }
+        }
+
+        // Caso seja clicado em uma casa vazia ou fora do tabuleiro, é retornado um vetor "nulo"
+        return (Vector2){NULA, NULA};
+    }
+
+    // Caso não haja clickes, ele apenas desenha um retangulo azul e escreve sua localização no topo, se o vetor não for "nulo"
+    if(atual.x != NULA){
+        Rectangle quadrado_atual = (Rectangle){inicio.x + lado_quadrado * atual.y, inicio.y + lado_quadrado * atual.x, lado_quadrado, lado_quadrado};
+        DrawRectangleLinesEx(quadrado_atual, lado_quadrado * 0.025, BLUE);      
+    }
+    
+    return atual;
 }

@@ -22,9 +22,9 @@ int main(){
         return 1;
     }
 
+    Vector2 peca_ativa = (Vector2){NULA, NULA};
+
     while(!WindowShouldClose()){
-
-
 
         BeginDrawing();
 
@@ -33,6 +33,8 @@ int main(){
         DesenharTabuleiro();
 
         DesenharPecas(imagens, tabuleiro);
+
+        peca_ativa = verifica_peca_selecionada(tabuleiro, peca_ativa);
 
         EndDrawing();
     }
