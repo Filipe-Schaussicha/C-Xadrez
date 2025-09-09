@@ -1,7 +1,7 @@
 #define SW 1280
 #define SH 720
 
-#define PRETO (Color){100, 100, 100, 255}
+#define COR_PRETO (Color){100, 100, 100, 255}
 
 typedef enum{
 
@@ -15,9 +15,16 @@ typedef enum{
 
 }TipoPeca;
 
+typedef enum{
+
+    BRANCO = 0,
+    PRETO = 1
+
+}CorPeca;
+
 typedef struct{
 
     TipoPeca tipo;
-    Color cor;
+    bool cor;
 
 }Peca;

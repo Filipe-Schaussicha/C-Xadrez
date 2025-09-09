@@ -3,6 +3,7 @@
 #include "logica.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 const int lado_tabuleiro = SH * 0.8;
 const int lado_quadrado = lado_tabuleiro / 8;
@@ -12,8 +13,8 @@ const Vector2 inicio = {(SW - lado_tabuleiro) / 2, (SH - lado_tabuleiro) / 2};
 
 void DesenharTabuleiro(){
 
-    Color branco = WHITE;
-    Color preto = PRETO;
+    Color branco = RAYWHITE;
+    Color preto = COR_PRETO;
 
     Vector2 mouse = GetMousePosition();
 
@@ -73,7 +74,7 @@ void DesenharPecas(Texture2D **imagens, Peca **tabuleiro){
 
                 Rectangle quadrado_atual = (Rectangle){inicio.x + lado_quadrado * j, inicio.y + lado_quadrado * i, lado_quadrado, lado_quadrado};
 
-                int cor = (compara_cores(tabuleiro[i][j].cor, PRETO)) ? 1 : 0;
+                int cor = (int)tabuleiro[i][j].cor;
 
                 float escala = (float)lado_quadrado / imagens[cor][tipo].height;
 
@@ -105,9 +106,9 @@ Vector2 verifica_peca_selecionada(Peca **tabuleiro, Vector2 atual){
 
                 Rectangle quadrado_atual = (Rectangle){inicio.x + lado_quadrado * j, inicio.y + lado_quadrado * i, lado_quadrado, lado_quadrado};
 
-                if(CheckCollisionPointRec(mouse, quadrado_atual) && tabuleiro[i][j].tipo != NULA){
+                if(CheckCollisionPointRec(mouse, quadrado_atual)){
                     // Se um quadrado foi clicado e ele tem alguma peça, é retornada sua coordenada no tabuleiro
-                    return (Vector2){i,j};
+                    return (Vector2){j,i};
                 }
             }
         }
@@ -118,9 +119,46 @@ Vector2 verifica_peca_selecionada(Peca **tabuleiro, Vector2 atual){
 
     // Caso não haja clickes, ele apenas desenha um retangulo azul e escreve sua localização no topo, se o vetor não for "nulo"
     if(atual.x != NULA){
-        Rectangle quadrado_atual = (Rectangle){inicio.x + lado_quadrado * atual.y, inicio.y + lado_quadrado * atual.x, lado_quadrado, lado_quadrado};
+        Rectangle quadrado_atual = (Rectangle){inicio.x + lado_quadrado * atual.x, inicio.y + lado_quadrado * atual.y, lado_quadrado, lado_quadrado};
         DrawRectangleLinesEx(quadrado_atual, lado_quadrado * 0.025, BLUE);      
     }
     
     return atual;
 }
+
+void DesenharPossiveisMovimentos(Peca **tabuleiro, Vector2 peca){
+
+    if(peca.y == NULA){
+        return;
+    }
+    if(tabuleiro[(int)peca.y][(int)peca.x].tipo == NULA){
+        return;
+    }
+
+    bool **possiveis_movimentos = VerificarMovimentosPossiveis(tabuleiro, peca);
+
+    if(possiveis_movimentos == NULL){
+        printf("ERRO de alocação\n");
+        return;
+    }
+
+    for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 8; j++){
+            // Debug
+            printf("%d ", (int)possiveis_movimentos[i][j]);
+
+            if(possiveis_movimentos[i][j]){
+                DrawCircle(inicio.x + lado_quadrado * j + lado_quadrado / 2, inicio.y + lado_quadrado * i + lado_quadrado / 2, lado_quadrado / 4.0, GRAY);
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+
+    for(int i = 0; i < 8; i++){
+        free(possiveis_movimentos[i]);
+    }
+
+    free(possiveis_movimentos);
+}
+

@@ -32,12 +32,12 @@ Peca **iniciar_tabuleiro(){
     for(int i = 0; i < 8; i++){
         for(int j = 0; j < 8; j++){
 
-            Color cor;
+            bool cor;
 
             if(i < 4){
                 cor = PRETO;
             }else{
-                cor = WHITE;
+                cor = BRANCO;
             }
 
             // popula a primeira e útima linha com as pesças do array anterior
@@ -50,7 +50,7 @@ Peca **iniciar_tabuleiro(){
 
             // popula o resto das linhas com a peça "NULA"
             }else{
-                tabuleiro[i][j] = (Peca){NULA, RED};
+                tabuleiro[i][j] = (Peca){NULA, NULA};
             }
 
             // para debug
@@ -103,3 +103,147 @@ bool compara_cores(Color cor1, Color cor2){
     return false;
 }
 
+bool **VerificarMovimentosPossiveis(Peca **tab, Vector2 peca){
+
+    int x = (int)peca.x;
+    int y = (int)peca.y;
+
+    TipoPeca tipo = tab[y][x].tipo;
+
+    bool cor_atual = tab[y][x].cor;
+
+    bool **movimentos = malloc(sizeof(bool*) * 8);
+
+    if(movimentos == NULL) return NULL;
+
+    for(int i = 0; i < 8; i++){
+        movimentos[i] = malloc(sizeof(bool) * 8);
+        if(movimentos[i] == NULL) return NULL;
+    }
+
+    for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 8; j++){
+            movimentos[i][j] = 0;
+        }
+    }
+
+    int sentido = 1;
+    if(cor_atual == BRANCO){
+        sentido *= -1;
+    }
+
+    if(tipo == PEAO){
+
+        printf("peca.x: %d | peca.y: %d\n", (int)peca.x, (int)peca.y);
+
+        if(tab[y + sentido][x].tipo == NULA){
+            movimentos[y + sentido][x] = true;
+
+            if(((y == 1 && sentido == 1) || (y == 6 && sentido == -1)) && tab[y + (2* sentido)][x].tipo == NULA){
+                movimentos[y + (2* sentido)][x] = true;
+            }
+        }
+
+        if(x != 7)
+            if(tab[y + sentido][x + 1].tipo != NULA && tab[y + sentido][x + 1].cor == !cor_atual){
+                movimentos[y + sentido][x + 1] = true;
+            }
+
+        if(x != 0)
+            if(tab[y + sentido][x - 1].tipo != NULA && tab[y + sentido][x - 1].cor == !cor_atual){
+                movimentos[y + sentido][x - 1] = true;
+            }
+
+        // TODO: outros movimentos do peão
+
+        return movimentos;
+    }
+
+    // TODO: outras peças
+
+    if(tipo == TORRE){
+
+        for(int ty = y + 1; ty < 8; ty++){
+            
+            if(tab[ty][x].cor == cor_atual && tab[ty][x].tipo != NULA){
+                break;
+            }
+
+            if(tab[ty][x].tipo != NULA && tab[ty - 1][x].tipo != NULA && ty - 1 != y){
+                break;
+            }
+
+            movimentos[ty][x] = true;
+        }
+
+        for(int ty = y - 1; ty >= 0; ty--){
+            
+            if(tab[ty][x].cor == cor_atual && tab[ty][x].tipo != NULA){
+                break;
+            }
+
+            if(tab[ty][x].tipo != NULA && tab[ty + 1][x].tipo != NULA && ty + 1 != y){
+                break;
+            }
+
+            movimentos[ty][x] = true;
+        }
+
+        for(int tx = x + 1; tx < 8; tx++){
+            
+            if(tab[y][tx].cor == cor_atual && tab[y][tx].tipo != NULA){
+                break;
+            }
+
+            if(tab[y][tx].tipo != NULA && tab[y - 1][tx].tipo != NULA && tx - 1 != x){
+                break;
+            }
+
+            movimentos[y][tx] = true;
+        }
+
+        for(int tx = x - 1; tx >= 0; tx--){
+            
+            if(tab[y][tx].cor == cor_atual && tab[y][tx].tipo != NULA){
+                break;
+            }
+
+            if(tab[y][tx].tipo != NULA && tab[y][tx + 1].tipo != NULA && tx + 1 != x){
+                break;
+            }
+
+            movimentos[y][tx] = true;
+        }
+
+        return movimentos;
+    }
+
+    return NULL;
+}
+
+Peca **iniciar_array_pecas(){
+
+    // aloca a matriz de peças
+    Peca **array_pecas = malloc(sizeof(Peca*) * 2);
+
+    if(array_pecas == NULL){
+        return NULL;
+    }
+
+    for(int i = 0; i < 2; i++){
+
+        array_pecas[i] = malloc(sizeof(Peca) * 8);
+
+        if(array_pecas[i] == NULL){
+            return NULL;
+        }
+    }
+
+    for(int i = 0; i < 2; i++){
+        for(int j =0; j < 8; j++){
+            array_pecas[i][j] = (Peca){NULA, NULA};
+        }
+    }
+
+    return array_pecas;
+}
