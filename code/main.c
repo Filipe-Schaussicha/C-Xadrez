@@ -11,8 +11,10 @@ int main(){
 
     SetTargetFPS(60);
 
+    // carrega a matriz com as peças do jogo
     Peca **tabuleiro = iniciar_tabuleiro();
 
+    // carrega as imagens das peças
     Texture2D **imagens = carregar_imagens();
 
     if(tabuleiro == NULL || imagens == NULL){
@@ -21,6 +23,8 @@ int main(){
     }
 
     while(!WindowShouldClose()){
+
+
 
         BeginDrawing();
 
@@ -33,7 +37,7 @@ int main(){
         EndDrawing();
     }
 
-
+    // Limpar memória para fechar o programa
     for(int i = 0; i < 8; i++){
         free(tabuleiro[i]);
     }
